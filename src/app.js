@@ -11,14 +11,17 @@ app.use(
   })
 );
 
-app.use(express.json({limit: "16kb"}))
+// Middleware to parse application/x-www-form-urlencoded
+app.use(express.urlencoded({ extended: true }));
+// Middleware to parse application/json
+app.use(express.json());
 // app.use(express.urlencoded({extended: true, limit: "16kb"}))
 // app.use(express.static("public"))
 // app.use(cookieParser())
 const usersRouter = require("./routes/Users.routes.js");
 //routes import
 //routes declaration
-app.use("/api/v1/users", usersRouter)
+app.use("/api/v1/users", usersRouter);
 // app.use("/api/v1/tweets", tweetRouter)
 // app.use("/api/v1/subscriptions", subscriptionRouter)
 // app.use("/api/v1/videos", videoRouter)

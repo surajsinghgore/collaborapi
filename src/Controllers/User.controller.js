@@ -4,8 +4,11 @@ const UserData = require("../models/UserData.model.js");
 const { asyncHandler } = require("../utils/AsyncHandler.js");
 const registerUser = asyncHandler(async (req, res) => {
   try {
-    const { fullName, email, username, password } = req.body;
-    console.log(fullName, email, username, password)
+   
+
+    // const {  email, username, password } = req.body;
+    const {  username } = req.body;
+    console.log(username)
     // throw new ApiError(400, "All fields are required")
     return res.status(201).json(new ApiResponse(200, "data", "User registered Successfully"));
   } catch (error) {
@@ -16,5 +19,4 @@ const registerUser = asyncHandler(async (req, res) => {
 // const refreshToken=UserData.generateRefreshToken()
 // const isPasswordValid = await user.isPasswordCorrect(password)
 
-
-module.exports= { registerUser };
+module.exports = { registerUser };
