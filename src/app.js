@@ -3,7 +3,8 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const app = express();
 require("dotenv").config();
-
+//routes import
+const usersRouter = require("./routes/Users.routes.js");
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN,
@@ -11,17 +12,17 @@ app.use(
   })
 );
 
-// Middleware to parse application/x-www-form-urlencoded
-app.use(express.urlencoded({ extended: true }));
-// Middleware to parse application/json
-app.use(express.json());
+app.use(express.json()); // For parsing application/json
+app.use(express.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
+
+
 // app.use(express.urlencoded({extended: true, limit: "16kb"}))
 // app.use(express.static("public"))
 // app.use(cookieParser())
-const usersRouter = require("./routes/Users.routes.js");
-//routes import
+
 //routes declaration
 app.use("/api/v1/users", usersRouter);
+
 // app.use("/api/v1/tweets", tweetRouter)
 // app.use("/api/v1/subscriptions", subscriptionRouter)
 // app.use("/api/v1/videos", videoRouter)
