@@ -2,9 +2,9 @@ const { ApiResponse } = require("../utils/ApiResponse.js");
 const { ApiError } = require("../utils/ApiError.js");
 const UserData = require("../models/UserData.model.js");
 const { asyncHandler } = require("../utils/AsyncHandler.js");
+
 const registerUser = asyncHandler(async (req, res) => {
   try {
-    console.log(req.body);
     // const {  email, username, password } = req.body;
 
     // throw new ApiError(400, "All fields are required")
