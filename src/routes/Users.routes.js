@@ -1,5 +1,5 @@
 const express = require("express");
-const { registerUser } = require("../controllers/User.controller");
+const { registerUser, verifyUser } = require("../controllers/User.controller");
 const router = express.Router();
 const registerValidation = require("../middlewares/registerValidation.middleware");
 const { upload } = require("../middlewares/multer.middleware");
@@ -43,4 +43,7 @@ router.post(
   }
 );
 
+
+// Verify User Verification
+router.verify('/verify',verifyUser)
 module.exports = router;

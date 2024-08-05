@@ -26,6 +26,8 @@ const handleFileUploads = async (req) => {
   return { profile, bannerImage };
 };
 
+
+// Register USer
 const registerUser = asyncHandler(async (req, res) => {
   let files = [];
 
@@ -73,4 +75,16 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { registerUser };
+
+// Verify User
+const verifyUser=asyncHandler(async(req,res)=>{
+  try{
+    return res.status(201).json(new ApiResponse(200, createdUser, "User registered successfully"));
+
+  } catch (error) {
+ 
+    console.error(error);
+    return res.status(error.statusCode || 500).json(new ApiResponse(error.statusCode || 500, null, error.message || "Internal Server Error"));
+  }
+})
+module.exports = { registerUser ,verifyUser};

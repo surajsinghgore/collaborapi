@@ -23,6 +23,15 @@ const UserDataSchema = new mongoose.Schema(
     bannerImage: {
       type: String,
     },
+    active: {
+      type: Boolean,
+      default: false,
+    },
+    verifyUrlLink: {
+      type: String,
+      required: false, // Make it optional
+      expires: 20 * 60, // Expire after 20 minutes
+    },
     refreshToken: {
       type: String,
     },
