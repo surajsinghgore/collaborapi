@@ -3,21 +3,7 @@ const { ApiError } = require("../utils/ApiError.js");
 const UserData = require("../models/UserData.model.js");
 const { asyncHandler } = require("../utils/AsyncHandler.js");
 const { uploadOnCloudinary } = require("../utils/cloudinary.js");
-const path = require("path"); // To handle file paths
-
-const generateAccessAndRefereshTokens = async (userId) => {
-  try {
-    const user = await UserData.findById(userId);
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
-    user.refreshToken = refreshToken;
-    await UserData.save({ validateBeforeSave: false });
-
-    return { accessToken, refreshToken };
-  } catch (error) {
-    throw new ApiError(500, "Something went wrong while generating referesh and access token");
-  }
-};
+const { deleteFiles, generateUniqueFilename } = require("../utils/FileRemoveUtils.js");
 
 const handleFileUploads = async (req) => {
   const profileLocalPath = req.files?.profile[0]?.path;
@@ -31,11 +17,9 @@ const handleFileUploads = async (req) => {
     throw new ApiError(400, "Profile file is required");
   }
 
-  // Generate unique filenames
   const profileUniqueName = generateUniqueFilename(req.files.profile[0].originalname);
   const bannerImageUniqueName = bannerImageLocalPath ? generateUniqueFilename(req.files.bannerImage[0].originalname) : undefined;
 
-  // Upload files to Cloudinary
   const profile = await uploadOnCloudinary(profileLocalPath, profileUniqueName);
   const bannerImage = bannerImageLocalPath ? await uploadOnCloudinary(bannerImageLocalPath, bannerImageUniqueName) : undefined;
 
@@ -43,32 +27,23 @@ const handleFileUploads = async (req) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
+  let files = [];
+
   try {
     const { email, username, password } = req.body;
-    const existedUser = await UserData.findOne({
-      $or: [{ username }, { email }],
-    });
+
+    const existedUser = await UserData.findOne({ $or: [{ username }, { email }] });
+
     if (existedUser) {
+      if (req.files) {
+        files = [...(req.files.profile || []), ...(req.files.bannerImage || [])];
+        deleteFiles(files);
+      }
       throw new ApiError(409, "User with email or username already exists");
     }
 
-    //console.log(req.files);
+    const { profile, bannerImage } = await handleFileUploads(req);
 
-    const profileLocalPath = req.files?.profile[0]?.path;
-    let bannerImageLocalPath;
-    if (req.files && Array.isArray(req.files.bannerImage) && req.files.bannerImage.length > 0) {
-      bannerImageLocalPath = req.files.bannerImage[0].path;
-    }
-
-    if (!profileLocalPath) {
-      throw new ApiError(400, "profile file is required");
-    }
-
-    const profile = await uploadOnCloudinary(profileLocalPath);
-    const bannerImage = await uploadOnCloudinary(bannerImageLocalPath);
-    if (!profile) {
-      throw new ApiError(400, "profile file is required");
-    }
     const user = await UserData.create({
       username,
       email,
@@ -80,17 +55,22 @@ const registerUser = asyncHandler(async (req, res) => {
     const createdUser = await UserData.findById(user._id).select("-password -refreshToken");
 
     if (!createdUser) {
+      if (req.files) {
+        files = [...(req.files.profile || []), ...(req.files.bannerImage || [])];
+        deleteFiles(files);
+      }
       throw new ApiError(500, "Something went wrong while registering the user");
     }
 
-    return res.status(201).json(new ApiResponse(200, createdUser, "User registered Successfully"));
+    return res.status(201).json(new ApiResponse(200, createdUser, "User registered successfully"));
   } catch (error) {
-    console.log(error);
-    throw new ApiError(500, "Internal Server Error");
+    if (req.files) {
+      files = [...(req.files.profile || []), ...(req.files.bannerImage || [])];
+      deleteFiles(files);
+    }
+    console.error(error);
+    return res.status(error.statusCode || 500).json(new ApiResponse(error.statusCode || 500, null, error.message || "Internal Server Error"));
   }
 });
-// const accessToken=UserData.generateAccessToken()
-// const refreshToken=UserData.generateRefreshToken()
-// const isPasswordValid = await user.isPasswordCorrect(password)
 
 module.exports = { registerUser };
