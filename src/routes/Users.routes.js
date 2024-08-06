@@ -45,5 +45,5 @@ router.post(
 
 
 // Verify User Verification
-router.verify('/verify',verifyUser)
+router.get('/verify',verifyUser)
 module.exports = router;
